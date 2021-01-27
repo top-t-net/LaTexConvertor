@@ -1,5 +1,5 @@
 # LaTexConvertor
-Convert LaTex code to .svg, .png file
+Convert LaTex code to .svg, .png file. It's based on https://github.com/opencollab/jlatexmath.
 
 # 中文
 ## LaTex转换器
