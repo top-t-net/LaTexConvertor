@@ -3,7 +3,13 @@ package net.top_t;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.apache.batik.svggen.SVGGraphics2DIOException;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.fop.render.ps.EPSTranscoder;
+import org.apache.fop.render.ps.PSTranscoder;
+import org.apache.fop.svg.AbstractFOPTranscoder;
+import org.apache.fop.svg.PDFTranscoder;
 import org.scilab.forge.jlatexmath.DefaultTeXFont;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
@@ -25,11 +31,15 @@ import java.io.*;
  */
 public class LaTexConvert
 {
+    private static final int PDF = 0;
+    private static final int PS = 1;
+    private static final int EPS = 2;
+
     /**
      * convert LaTex code to .svg code
      * @param latex LaTex code
      * @param fontAsShapes  use shape
-     * @param bkgTransparent if set background color to transparent
+     * @param bkgTransparent if set background color to be transparent
      * @return
      * @throws IOException
      */
@@ -76,9 +86,9 @@ public class LaTexConvert
 
     /**
      * convert LaTex code to .svg file
-     * @param latexCode
-     * @param fontAsShapes
-     * @param bkgTransparent
+     * @param latexCode LaTex formula
+     * @param fontAsShapes  font as shapes
+     * @param bkgTransparent set background to be transparent
      * @param svgFile
      */
     public static void toSvgFile(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File svgFile) {
@@ -98,9 +108,9 @@ public class LaTexConvert
 
     /**
      * convert LaTex code to .png file
-     * @param latexString
-     * @param pngFile
-     * @param isTransparent set the background color to transparent
+     * @param latexString LaTex formula
+     * @param pngFile File object, where the png file will be stored to
+     * @param isTransparent set the background color to be transparent
      * @throws IOException
      */
     public static void toPngFile(String latexString, File pngFile, boolean isTransparent) throws IOException {
@@ -126,6 +136,82 @@ public class LaTexConvert
         ImageIO.write(image, "png", pngFile.getAbsoluteFile());
     }
 
+    /**
+     * convert LaTex code to a .pdf file
+     * @param latexCode LaTex code
+     * @param fontAsShapes it can be set to true/false
+     * @param bkgTransparent background color is transparent or not
+     * @param pdfFile File object of PDF
+     * @throws TranscoderException
+     * @throws IOException
+     */
+    public static void toPdf(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File pdfFile) throws TranscoderException, IOException {
+        svgTo(latexCode, fontAsShapes, bkgTransparent, PDF, pdfFile);
+    }
+
+    /**
+     * convert LaTex code to ps file
+     * @param latexCode LaTex code
+     * @param fontAsShapes it can be set to true/false
+     * @param bkgTransparent background color is transparent or not
+     * @param psFile File object of ps
+     * @throws IOException
+     * @throws TranscoderException
+     */
+    public static void toPs(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File psFile) throws IOException, TranscoderException {
+        svgTo(latexCode, fontAsShapes, bkgTransparent, PS, psFile);
+    }
+
+    /**
+     * convert LaTex code to eps file
+     * @param latexCode LaTex code
+     * @param fontAsShapes it can be set to true/false
+     * @param bkgTransparent background color is transparent or not
+     * @param epsFile file object of eps
+     * @throws IOException
+     * @throws TranscoderException
+     */
+    public static void toEps(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File epsFile) throws IOException, TranscoderException {
+        svgTo(latexCode, fontAsShapes, bkgTransparent, EPS, epsFile);
+    }
+
+    /**
+     * convert LaTex code to given file type. support PDF/PS/EPS file
+     * @param latexCode LaTex code
+     * @param fontAsShapes it can be set to true/false
+     * @param bkgTransparent background color is transparent or not
+     * @param type file type of PDF, PS, EPS
+     * @param output file of output
+     * @throws IOException
+     * @throws TranscoderException
+     */
+    private static void svgTo(String latexCode, boolean fontAsShapes, boolean bkgTransparent, int type, File output) throws IOException, TranscoderException {
+        AbstractFOPTranscoder trans;
+        switch (type) {
+            case PDF:
+                trans = new PDFTranscoder();
+                break;
+            case PS:
+                trans = new PSTranscoder();
+                break;
+            case EPS:
+                trans = new EPSTranscoder();
+                break;
+            default:
+                trans = null;
+        }
+
+        String svgCode = latexToSvgCode(latexCode, fontAsShapes, bkgTransparent);
+        Reader reader = new StringReader(svgCode);
+        TranscoderInput transcoderInput = new TranscoderInput(reader);
+        OutputStream outputStream = new FileOutputStream(output);
+        TranscoderOutput transcoderOutput = new TranscoderOutput(outputStream);
+        assert trans != null;
+        trans.transcode(transcoderInput, transcoderOutput);
+        outputStream.flush();
+        outputStream.close();
+    }
+
     public static void main( String[] args )
     {
         String latex = "\\begin{array}{l}";
@@ -140,9 +226,12 @@ public class LaTexConvert
         latex += "\\end{array}";
 
         File imgFile = new File("/tmp/example1.png");
+        File svgFile = new File("/tmp/example2.svg");
         try {
             // generate png file with transparent background
             LaTexConvert.toPngFile(latex, imgFile, true);
+            // generate svg file with transparent background
+            LaTexConvert.toSvgFile(latex, true, true, svgFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
