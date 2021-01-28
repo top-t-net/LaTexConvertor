@@ -100,6 +100,7 @@ public class LaTexConvert
      * convert LaTex code to .png file
      * @param latexString
      * @param pngFile
+     * @param isTransparent set the background color to transparent
      * @throws IOException
      */
     public static void toPngFile(String latexString, File pngFile, boolean isTransparent) throws IOException {
@@ -140,6 +141,7 @@ public class LaTexConvert
 
         File imgFile = new File("/tmp/example1.png");
         try {
+            // generate png file with transparent background
             LaTexConvert.toPngFile(latex, imgFile, true);
         } catch (IOException e) {
             e.printStackTrace();
