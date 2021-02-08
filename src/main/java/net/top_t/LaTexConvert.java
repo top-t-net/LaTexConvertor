@@ -39,11 +39,12 @@ public class LaTexConvert
      * convert LaTex code to .svg code
      * @param latex LaTex code
      * @param fontAsShapes  use shape
+     * @param size the default TeXFont's point size
      * @param bkgTransparent if set background color to be transparent
      * @return
      * @throws IOException
      */
-    public static String latexToSvgCode(String latex, boolean fontAsShapes, boolean bkgTransparent) throws IOException {
+    public static String latexToSvgCode(String latex, boolean fontAsShapes, float size, boolean bkgTransparent) throws IOException {
         DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
         String svgNS = "http://www.w3.org/2000/svg";
         Document document = domImpl.createDocument(svgNS, "svg", null);
@@ -55,7 +56,7 @@ public class LaTexConvert
         DefaultTeXFont.registerAlphabet(new GreekRegistration());
 
         TeXFormula formula = new TeXFormula(latex);
-        TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20);
+        TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, size);
         icon.setInsets(new Insets(5, 5, 5, 5));
         int width = icon.getIconWidth();
         int height = icon.getIconHeight();
@@ -88,12 +89,13 @@ public class LaTexConvert
      * convert LaTex code to .svg file
      * @param latexCode LaTex formula
      * @param fontAsShapes  font as shapes
+     * @param size the default TeXFont's point size
      * @param bkgTransparent set background to be transparent
      * @param svgFile
      */
-    public static void toSvgFile(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File svgFile) {
+    public static void toSvgFile(String latexCode, boolean fontAsShapes, float size, boolean bkgTransparent, File svgFile) {
         try {
-            String svgCode = latexToSvgCode(latexCode, fontAsShapes, bkgTransparent);
+            String svgCode = latexToSvgCode(latexCode, fontAsShapes, size, bkgTransparent);
 
             if (null != svgFile) {
                 OutputStream outputStream = new FileOutputStream(svgFile);
@@ -109,14 +111,15 @@ public class LaTexConvert
     /**
      * convert LaTex code to .png file
      * @param latexString LaTex formula
+     * @param size the default TeXFont's point size
      * @param pngFile File object, where the png file will be stored to
      * @param isTransparent set the background color to be transparent
      * @throws IOException
      */
-    public static void toPngFile(String latexString, File pngFile, boolean isTransparent) throws IOException {
+    public static void toPngFile(String latexString, float size, File pngFile, boolean isTransparent) throws IOException {
         TeXFormula formula = new TeXFormula(latexString);
 
-        TeXIcon icon = formula.new TeXIconBuilder().setStyle(TeXConstants.STYLE_DISPLAY).setSize(20).build();
+        TeXIcon icon = formula.new TeXIconBuilder().setStyle(TeXConstants.STYLE_DISPLAY).setSize(size).build();
         icon.setInsets(new Insets(5, 5, 5, 5));
 
         BufferedImage image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -140,52 +143,56 @@ public class LaTexConvert
      * convert LaTex code to a .pdf file
      * @param latexCode LaTex code
      * @param fontAsShapes it can be set to true/false
+     * @param size the default TeXFont's point size
      * @param bkgTransparent background color is transparent or not
      * @param pdfFile File object of PDF
      * @throws TranscoderException
      * @throws IOException
      */
-    public static void toPdf(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File pdfFile) throws TranscoderException, IOException {
-        svgTo(latexCode, fontAsShapes, bkgTransparent, PDF, pdfFile);
+    public static void toPdf(String latexCode, boolean fontAsShapes, float size, boolean bkgTransparent, File pdfFile) throws TranscoderException, IOException {
+        svgTo(latexCode, fontAsShapes, size, bkgTransparent, PDF, pdfFile);
     }
 
     /**
      * convert LaTex code to ps file
      * @param latexCode LaTex code
      * @param fontAsShapes it can be set to true/false
+     * @param size the default TeXFont's point size
      * @param bkgTransparent background color is transparent or not
      * @param psFile File object of ps
      * @throws IOException
      * @throws TranscoderException
      */
-    public static void toPs(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File psFile) throws IOException, TranscoderException {
-        svgTo(latexCode, fontAsShapes, bkgTransparent, PS, psFile);
+    public static void toPs(String latexCode, boolean fontAsShapes, float size, boolean bkgTransparent, File psFile) throws IOException, TranscoderException {
+        svgTo(latexCode, fontAsShapes, size, bkgTransparent, PS, psFile);
     }
 
     /**
      * convert LaTex code to eps file
      * @param latexCode LaTex code
      * @param fontAsShapes it can be set to true/false
+     * @param size the default TeXFont's point size
      * @param bkgTransparent background color is transparent or not
      * @param epsFile file object of eps
      * @throws IOException
      * @throws TranscoderException
      */
-    public static void toEps(String latexCode, boolean fontAsShapes, boolean bkgTransparent, File epsFile) throws IOException, TranscoderException {
-        svgTo(latexCode, fontAsShapes, bkgTransparent, EPS, epsFile);
+    public static void toEps(String latexCode, boolean fontAsShapes, float size, boolean bkgTransparent, File epsFile) throws IOException, TranscoderException {
+        svgTo(latexCode, fontAsShapes, size, bkgTransparent, EPS, epsFile);
     }
 
     /**
      * convert LaTex code to given file type. support PDF/PS/EPS file
      * @param latexCode LaTex code
      * @param fontAsShapes it can be set to true/false
+     * @param size the default TeXFont's point size
      * @param bkgTransparent background color is transparent or not
      * @param type file type of PDF, PS, EPS
      * @param output file of output
      * @throws IOException
      * @throws TranscoderException
      */
-    private static void svgTo(String latexCode, boolean fontAsShapes, boolean bkgTransparent, int type, File output) throws IOException, TranscoderException {
+    private static void svgTo(String latexCode, boolean fontAsShapes, float size, boolean bkgTransparent, int type, File output) throws IOException, TranscoderException {
         AbstractFOPTranscoder trans;
         switch (type) {
             case PDF:
@@ -201,7 +208,7 @@ public class LaTexConvert
                 trans = null;
         }
 
-        String svgCode = latexToSvgCode(latexCode, fontAsShapes, bkgTransparent);
+        String svgCode = latexToSvgCode(latexCode, fontAsShapes, size, bkgTransparent);
         Reader reader = new StringReader(svgCode);
         TranscoderInput transcoderInput = new TranscoderInput(reader);
         OutputStream outputStream = new FileOutputStream(output);
@@ -214,6 +221,8 @@ public class LaTexConvert
 
     public static void main( String[] args )
     {
+        float SIZE = 50;
+
         String latex = "\\begin{array}{l}";
         latex += "\\forall\\varepsilon\\in\\mathbb{R}_+^*\\ \\exists\\eta>0\\ |x-x_0|\\leq\\eta\\Longrightarrow|f(x)-f(x_0)|\\leq\\varepsilon\\\\";
         latex += "\\det\\begin{bmatrix}a_{11}&a_{12}&\\cdots&a_{1n}\\\\a_{21}&\\ddots&&\\vdots\\\\\\vdots&&\\ddots&\\vdots\\\\a_{n1}&\\cdots&\\cdots&a_{nn}\\end{bmatrix}\\overset{\\mathrm{def}}{=}\\sum_{\\sigma\\in\\mathfrak{S}_n}\\varepsilon(\\sigma)\\prod_{k=1}^n a_{k\\sigma(k)}\\\\";
@@ -226,13 +235,17 @@ public class LaTexConvert
         latex += "\\end{array}";
 
         File imgFile = new File("/tmp/example1.png");
-        File svgFile = new File("/tmp/example2.svg");
+        File svgFile = new File("/tmp/example1.svg");
+        File psFile = new File("/tmp/example1.ps");
+        File epsFile = new File("/tmp/example1.eps");
         try {
             // generate png file with transparent background
-            LaTexConvert.toPngFile(latex, imgFile, true);
+            LaTexConvert.toPngFile(latex, SIZE, imgFile, true);
             // generate svg file with transparent background
-            LaTexConvert.toSvgFile(latex, true, true, svgFile);
-        } catch (IOException e) {
+            LaTexConvert.toSvgFile(latex, true, SIZE, true, svgFile);
+            LaTexConvert.toPs(latex, true, SIZE, true, psFile);
+            LaTexConvert.toEps(latex, true, SIZE, true, epsFile);
+        } catch (IOException | TranscoderException e) {
             e.printStackTrace();
         }
 
