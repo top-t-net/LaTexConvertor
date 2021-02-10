@@ -12,13 +12,23 @@ Including the Java library in your project
 ```
 # Usage
 ```java
-String latexStr = "xxx";
-File pngFile = new File("/tmp/example1.png");
-File svgFile = new File("/tmp/example2.svg");
+float SIZE = 50;
+
+String latex = "xxxxx";
+
+File imgFile = new File("/tmp/example1.png");
+File svgFile = new File("/tmp/example1.svg");
+File psFile = new File("/tmp/example1.ps");
+File epsFile = new File("/tmp/example1.eps");
+
 // generate png file with transparent background
-LaTexConvert.toPngFile(latexStr, pngFile, true);
+LaTexConvert.toPngFile(latex, SIZE, imgFile, true);
 // generate svg file with transparent background
-LaTexConvert.toSvgFile(latexStr, true, true, svgFile);
+LaTexConvert.toSvgFile(latex, true, SIZE, true, svgFile);
+LaTexConvert.toPs(latex, true, SIZE, true, psFile);
+LaTexConvert.toEps(latex, true, SIZE, true, epsFile);
+
+
 ```
 
 # 中文
